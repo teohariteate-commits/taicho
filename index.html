@@ -256,6 +256,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   .sho-card .yomi { margin-top: 2px; }
   .panel, .sho-card, .stage, .adv, .believe, .future, .notice, .field { break-inside: avoid; page-break-inside: avoid; }
   p { orphans: 3; widows: 3; }
+  /* iPad は大きな枠をページの境目で分けることがあり、外枠の線が途中で切れて見える。印刷では外枠をやめて、上の区切り線だけにする */
+  .panel { border: none; border-top: 1.5px solid var(--line); border-radius: 0; padding: 12px 0 0; }
+  .eyebrow, h2, h3 { break-after: avoid; page-break-after: avoid; }
+  .mtrack { margin-bottom: 14px; }
   .stages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .advice { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -969,7 +973,9 @@ function resultHTML() {
         <div class="plan-item"><span class="k">通う期間</span><span class="v">${esc(state.term)}</span></div>
       </div>
       ${state.termNote ? `<p>${esc(state.termNote)}</p>` : ""}
-      <h3>通院の流れ</h3>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">通院の流れ</span>
       <div class="stages">${STAGES.map((st) => `<div class="stage"><span class="when">${st.when}</span><b>${st.name}</b><p>${st.text}</p></div>`).join("")}</div>
       ${state.future ? `<div class="future"><span class="eyebrow">その先に目指すからだ</span><span class="v">${esc(state.future)}</span></div>` : ""}
     </div>
