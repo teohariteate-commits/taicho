@@ -26,8 +26,9 @@
   --warn-soft: #fbeee5;
   /* 8つの証の色 */
   --A: #b7791f; --B: #2f6aa8; --C: #b8506a; --D: #2b8a85; --E: #4f8a3c; --F: #6b56a8; --G: #7d6b45; --H: #c4472f; --K: #44546a;
-  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
-  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  /* iPad・Mac は内蔵のヒラギノを先に使い、Web フォントを読み込まない（日本語の Web フォントは数百ファイルに分かれていて、iPad では重くなるため） */
+  --font-display: "Hiragino Maru Gothic ProN", "Zen Maru Gothic", "Yu Gothic", sans-serif;
+  --font-body: "Hiragino Sans", "BIZ UDPGothic", "Yu Gothic", "Meiryo", sans-serif;
   --radius: 14px;
 }
 @media (prefers-color-scheme: dark) {
@@ -50,6 +51,8 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+/* すばやく続けてタップしても、画面が拡大されないようにする */
+button, a, input, textarea, summary { touch-action: manipulation; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
   font-family: var(--font-body); font-size: 17px; line-height: 1.7;
