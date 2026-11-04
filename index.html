@@ -248,8 +248,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   body { font-size: 11pt; padding: 0; }
   body::before, header.top, nav.bar, .no-print, details.staff, .confirm { display: none !important; }
   .wrap { max-width: none; padding: 0; }
-  .stack { gap: 14px; }
-  .panel, .sho-card, .stage, .adv, .believe, .future, .notice { break-inside: avoid; }
+  /* iPad の Safari は flex の中身をページの境目で切ってしまう（文字が上下に分かれる）。印刷では flex をやめて、ふつうの縦の並びにする */
+  .wrap, .stack, .panel, .sho-card, .believe, .future, .result-head, .meters, .meter, .stage, .adv, .field { display: block; }
+  .eyebrow, .role, .term, .yomi, .when, .stage b, .future .v, .field .label { display: block; }
+  .wrap > * + *, .stack > * + * { margin-top: 14px; }
+  .panel > * + *, .sho-card > * + *, .believe > * + *, .future > * + *, .stage > * + *, .adv > * + *, .field > * + *, .meters > * + *, .meter > * + * { margin-top: 8px; }
+  .sho-card .yomi { margin-top: 2px; }
+  .panel, .sho-card, .stage, .adv, .believe, .future, .notice, .field { break-inside: avoid; page-break-inside: avoid; }
+  p { orphans: 3; widows: 3; }
   .stages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .advice { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
