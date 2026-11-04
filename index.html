@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>鍼灸体調確認表</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=BIZ+UDPGothic:wght@400;700&display=swap">
+<style>
+/* Layout: 1画面1テーマのタブレット向け問診。受付 → 健康のこと → お悩み → 体質の質問6画面 → きっかけ → 施術者の確認 → 患者さん向けの結果 */
+:root {
+  --bg: #f3f5f2;
+  --surface: #ffffff;
+  --ink: #23302d;
+  --muted: #5d6b67;
+  --line: #d8dfdb;
+  --accent: #7a3e62;
+  --accent-soft: #f3e7ee;
+  --on-accent: #ffffff;
+  --staff: #2f5d6e;
+  --staff-soft: #e4eef1;
+  --warn: #a5552a;
+  --warn-soft: #fbeee5;
+  /* 8つの証の色 */
+  --A: #b7791f; --B: #2f6aa8; --C: #b8506a; --D: #2b8a85; --E: #4f8a3c; --F: #6b56a8; --G: #7d6b45; --H: #c4472f; --K: #44546a;
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171d1c; --surface: #212927; --ink: #e8eeeb; --muted: #a3b0ac; --line: #35403d;
+    --accent: #d99abd; --accent-soft: #3a2a33; --on-accent: #22161d;
+    --staff: #8cc4d6; --staff-soft: #22343a;
+    --warn: #f0a77c; --warn-soft: #3a2a22;
+    --A: #e0a85a; --B: #7eaee6; --C: #e88aa0; --D: #6cc7c0; --E: #8fc77a; --F: #a996e0; --G: #c4b083; --H: #f08a70; --K: #a8b6c8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171d1c; --surface: #212927; --ink: #e8eeeb; --muted: #a3b0ac; --line: #35403d;
+  --accent: #d99abd; --accent-soft: #3a2a33; --on-accent: #22161d;
+  --staff: #8cc4d6; --staff-soft: #22343a;
+  --warn: #f0a77c; --warn-soft: #3a2a22;
+  --A: #e0a85a; --B: #7eaee6; --C: #e88aa0; --D: #6cc7c0; --E: #8fc77a; --F: #a996e0; --G: #c4b083; --H: #f08a70; --K: #a8b6c8;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 20px 120px; display: flex; flex-direction: column; gap: 20px; }
+.stack { display: flex; flex-direction: column; gap: 20px; }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 12px 10px; display: flex; flex-direction: column; gap: 10px; }
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; margin: 0; letter-spacing: .04em; }
+.brand .step { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.progress { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; }
+.progress span { height: 6px; border-radius: 3px; background: var(--line); }
+.progress span.done { background: var(--accent); }
+
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.4; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; line-height: 1.4; margin: 0; }
+.lead { color: var(--muted); margin: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel p { margin: 0; }
+
+/* 入力 */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .label { font-weight: 700; font-size: .95rem; }
+.field .opt { color: var(--muted); font-weight: 400; font-size: .85rem; margin-left: 6px; }
+input[type="text"], input[type="date"], input[type="number"], textarea {
+  font: inherit; font-size: 1.02rem; padding: 12px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; min-height: 52px;
+}
+textarea { line-height: 1.6; resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: .98rem; padding: 10px 16px; min-height: 48px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+.staff-screen .chip[aria-pressed="true"] { background: var(--staff); border-color: var(--staff); }
+.chips.big .chip { font-size: 1.05rem; padding: 12px 20px; min-height: 56px; }
+.group-h { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+
+/* 設問 */
+.howto { background: var(--accent-soft); border-radius: var(--radius); padding: 14px 18px; margin: 0; font-size: .95rem; }
+.qs { display: flex; flex-direction: column; gap: 10px; }
+.q {
+  display: flex; align-items: center; gap: 16px; width: 100%; text-align: left;
+  font: inherit; font-size: 1.08rem; line-height: 1.55; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius);
+  padding: 14px 18px; min-height: 68px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.q .box {
+  flex: none; width: 34px; height: 34px; border-radius: 10px; border: 2px solid var(--line);
+  display: grid; place-items: center; transition: background .15s, border-color .15s;
+}
+.q .box svg { width: 20px; height: 20px; opacity: 0; transition: opacity .15s; }
+.q[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.q[aria-pressed="true"] .box { background: var(--accent); border-color: var(--accent); }
+.q[aria-pressed="true"] .box svg { opacity: 1; }
+.q .txt { min-width: 0; }
+.count-note { color: var(--muted); font-size: .9rem; text-align: right; font-variant-numeric: tabular-nums; margin: 0; }
+
+/* 下のナビ */
+nav.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding-top: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+nav.bar .in { max-width: 760px; margin: 0 auto; display: flex; gap: 12px; }
+.btn {
+  font: inherit; font-weight: 700; font-size: 1.05rem; min-height: 56px; padding: 0 22px;
+  border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.btn.primary { flex: 1; background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn:disabled { opacity: .4; cursor: default; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* 施術者の確認画面 */
+.staff-banner { background: var(--staff-soft); color: var(--ink); border-left: 5px solid var(--staff); border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; display: flex; flex-direction: column; gap: 4px; }
+.staff-banner strong { color: var(--staff); letter-spacing: .06em; font-size: .85rem; }
+.staff-screen .eyebrow { color: var(--staff); }
+.warn { background: var(--warn-soft); border-left: 5px solid var(--warn); border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; }
+.warn strong { color: var(--warn); letter-spacing: .06em; font-size: .85rem; }
+.warn ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; font-size: .95rem; }
+.kv { display: grid; grid-template-columns: 8em 1fr; gap: 6px 12px; font-size: .95rem; margin: 0; }
+.kv dt { color: var(--muted); font-weight: 700; }
+.kv dd { margin: 0; min-width: 0; }
+@media (max-width: 520px) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: 6px; } }
+.hakko { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: center; }
+@media (max-width: 560px) { .hakko { grid-template-columns: 1fr; justify-items: center; } }
+.hakko svg { width: 100%; max-width: 220px; height: auto; display: block; }
+.hakko svg text { font-family: var(--font-body); }
+
+/* 結果 */
+.result-head { display: flex; flex-direction: column; gap: 6px; }
+.eyebrow { font-size: .8rem; letter-spacing: .12em; color: var(--muted); font-weight: 700; }
+.sho-card { border: 1.5px solid var(--line); border-top: 6px solid var(--tc); border-radius: var(--radius); background: var(--surface); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.sho-card .role { font-size: .8rem; font-weight: 700; color: var(--tc); letter-spacing: .08em; }
+.sho-card .term { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; line-height: 1.3; }
+.sho-card .yomi { color: var(--muted); font-size: .9rem; margin-top: -6px; }
+.sho-card p { margin: 0; }
+.strength { background: var(--bg); border-radius: 10px; padding: 10px 14px; font-size: .95rem; }
+.strength b { color: var(--tc); }
+.sub-line { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px; }
+.sub-line .tag { font-size: .78rem; font-weight: 700; color: var(--tc); letter-spacing: .08em; }
+.sub-line .t { font-weight: 700; }
+
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 6.5em 1fr 3.2em; gap: 12px; align-items: center; font-size: .92rem; }
+.bar-row .lbl { min-width: 0; }
+.bar-row .track { height: 14px; background: var(--bg); border-radius: 7px; overflow: hidden; border: 1px solid var(--line); }
+.bar-row .fill { height: 100%; background: var(--tc); border-radius: 7px; }
+.bar-row .n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* からだのバランス（患者さん向けの目盛り） */
+.meters { display: flex; flex-direction: column; gap: 16px; }
+.meter { display: flex; flex-direction: column; gap: 6px; }
+.meter .ends { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; font-size: .9rem; font-weight: 700; align-items: baseline; }
+.meter .ends span:last-child { text-align: right; }
+.meter .mid { color: var(--muted); font-weight: 400; font-size: .8rem; }
+.mtrack { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, var(--l), var(--line) 50%, var(--r)); }
+.mtrack::after { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; background: var(--muted); opacity: .5; }
+.mtrack .dot { position: absolute; top: 50%; width: 26px; height: 26px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--surface); border: 5px solid var(--ink); z-index: 1; }
+
+.plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.plan-item { background: var(--bg); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.plan-item .k { font-size: .8rem; color: var(--muted); font-weight: 700; letter-spacing: .06em; }
+.plan-item .v { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; }
+.pre { white-space: pre-wrap; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tags span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: .92rem; background: var(--bg); }
+.tags span.top { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+.goal { font-family: var(--font-display); font-size: 1.12rem; line-height: 1.85; }
+
+/* 通院の流れ */
+.stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; counter-reset: st; }
+@media (max-width: 620px) { .stages { grid-template-columns: 1fr; } }
+.stage { border: 1px solid var(--line); border-top: 6px solid var(--accent); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
+.stage:nth-child(2) { border-top-color: color-mix(in srgb, var(--accent) 65%, var(--surface)); }
+.stage:nth-child(3) { border-top-color: color-mix(in srgb, var(--accent) 35%, var(--surface)); }
+.stage .when { font-size: .78rem; color: var(--muted); font-weight: 700; letter-spacing: .06em; }
+.stage b { font-family: var(--font-display); font-size: 1.12rem; }
+.stage p { font-size: .92rem; line-height: 1.65; }
+.future { background: var(--accent-soft); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+.future .v { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; line-height: 1.6; text-wrap: balance; }
+
+.advice { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.adv { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); }
+.adv .h { font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+.adv .h::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--hc, var(--accent)); flex: none; }
+.adv ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; font-size: .95rem; }
+.adv p { font-size: .95rem; }
+.comment { font-family: var(--font-display); font-size: 1.05rem; line-height: 1.8; border-left: 4px solid var(--accent); padding-left: 14px; }
+.believe { background: var(--accent-soft); border-radius: var(--radius); padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+.believe p { margin: 0; font-family: var(--font-display); font-size: 1.12rem; line-height: 1.95; }
+.believe .last { font-weight: 700; }
+.notice { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 10px 10px 0; font-size: .95rem; margin: 0; }
+.small { font-size: .85rem; color: var(--muted); margin: 0; }
+
+.staff summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.staff pre, .staff-pre {
+  white-space: pre-wrap; word-break: break-word; font-family: var(--font-body); font-size: .92rem;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 0;
+}
+.copy-row, .out-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.copied { color: var(--E); font-weight: 700; font-size: .9rem; }
+
+/* 次の方へ の確認 */
+.confirm { position: fixed; inset: 0; z-index: 20; background: rgba(20, 26, 25, .45); display: grid; place-items: center; padding: 16px; }
+.confirm .box2 { background: var(--surface); color: var(--ink); border-radius: var(--radius); padding: 24px; max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.confirm .acts { display: flex; gap: 12px; }
+.confirm .acts .btn { flex: 1; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* 印刷: 患者さん向けの結果だけを、明るい配色で A4 に出す */
+@media print {
+  :root:root:root {
+    --bg: #ffffff; --surface: #ffffff; --ink: #23302d; --muted: #5d6b67; --line: #d8dfdb;
+    --accent: #7a3e62; --accent-soft: #f3e7ee; --on-accent: #ffffff;
+    --A: #b7791f; --B: #2f6aa8; --C: #b8506a; --D: #2b8a85; --E: #4f8a3c; --F: #6b56a8; --G: #7d6b45; --H: #c4472f; --K: #44546a;
+    color-scheme: light;
+  }
+  @page { size: A4; margin: 12mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-size: 11pt; padding: 0; }
+  body::before, header.top, nav.bar, .no-print, details.staff, .confirm { display: none !important; }
+  .wrap { max-width: none; padding: 0; }
+  .stack { gap: 14px; }
+  .panel, .sho-card, .stage, .adv, .believe, .future, .notice { break-inside: avoid; }
+  .stages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .advice { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>鍼灸体調確認表</h1>
+      <span class="step" id="stepLabel"></span>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+  </header>
+  <main id="screen"></main>
+</div>
+
+<nav class="bar" aria-label="ページ移動">
+  <div class="in">
+    <button class="btn" id="backBtn" type="button">もどる</button>
+    <button class="btn primary" id="nextBtn" type="button">はじめる</button>
+  </div>
+</nav>
+
+<div class="confirm" id="confirm" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="box2">
+    <h2 id="confirmTitle" style="font-size:1.25rem">入力内容を消して、次の方へ進みますか？</h2>
+    <p class="small">この確認表はデータを保存しません。消すと元に戻せないので、必要な内容はカルテに書き写してから進んでください。</p>
+    <div class="acts">
+      <button class="btn" id="cancelReset" type="button">やめる</button>
+      <button class="btn primary" id="doReset" type="button">消して次の方へ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CHECK_SVG = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// 8つの証。A〜D は「足りない（虚）」、E〜H は「詰まっている（実）」。各証6問ずつ、下の SECTIONS に散らしてある
+const TYPES = {
+  A: { term: "気虚", termSub: "脾気虚", yomi: "ききょ／ひききょ", nick: "おつかれ・エネルギー不足さん", group: "虚",
+    state: "からだを動かすエネルギー「気」が足りなくなっている状態です。気は主に胃腸（脾）の働きで食べたものからつくられるため、胃腸が疲れると気も不足しやすくなります。疲れやすさ、だるさ、食欲のムラ、風邪のひきやすさとして表れやすくなります。",
+    strength: "まわりに気を配れて、コツコツと続けられる力があります。",
+    policy: "補気健脾：脾胃の働きを助けて気を補う。お腹と足元にお灸を併用し、刺激量は少なめから。",
+    points: ["足三里", "中脘", "気海", "脾兪"],
+    full: "胃腸の働きを助けて、からだの中からエネルギーを補う施術をしていきます。", short: "エネルギーを補うこと",
+    future: "朝すっきり起きられて、一日を元気に過ごせるからだ",
+    food: ["お米・山芋・かぼちゃ・さつまいも", "鶏肉・鮭・卵", "温かいスープや煮物", "しょうが・ねぎ（温める薬味）"],
+    living: ["食事の時間をそろえ、よくかんで食べる", "疲れた日は早めに休む", "ゆったり歩く・ストレッチなどの軽い運動"],
+    less: ["冷たい飲み物・生野菜のとり過ぎ", "食べ過ぎ・ながら食べ", "汗だくになる激しい運動"],
+    mind: "がんばり過ぎない日をつくることも、からだづくりのひとつです。" },
+  B: { term: "陽虚", termSub: "脾腎陽虚", yomi: "ようきょ／ひじんようきょ", nick: "ひえひえ・ぽかぽか不足さん", group: "虚",
+    state: "からだを温める力「陽気」が不足している状態です。からだの芯が冷えやすく、腰やお腹の冷え、寒がり、トイレの近さ、お腹のゆるさとして表れやすくなります。疲れの積み重ねや年齢とともに、生命力をたくわえる「腎」の温める力も弱りやすくなります。",
+    strength: "落ち着いていて、じっくり物事に向き合える力があります。",
+    policy: "温補脾腎：脾陽・腎陽を温め補う。関元・腎兪・命門のお灸を中心に。",
+    points: ["関元", "腎兪", "命門", "足三里"],
+    full: "からだの芯を温めて、自分で温まる力を育てる施術をしていきます。お灸も取り入れます。", short: "からだを温めること",
+    future: "手足やお腹がぽかぽかして、寒い季節も楽に過ごせるからだ",
+    food: ["しょうが・ねぎ・にら", "鶏肉・えび・羊肉", "くるみ・栗・黒豆", "シナモン・ほうじ茶"],
+    living: ["腹巻き・レッグウォーマーで腰とお腹、足首を温める", "湯船にゆっくりつかる", "日中に日光を浴びて、からだを動かす"],
+    less: ["冷たい飲み物・アイス", "薄着・素足", "冷房の効いた部屋に長くいること"],
+    mind: "「温めること」は、いちばん手軽で続けやすいセルフケアです。" },
+  C: { term: "血虚", termSub: "肝血虚", yomi: "けっきょ／かんけっきょ", nick: "ふらふら・血の貯金不足さん", group: "虚",
+    state: "からだを養う「血」が不足している状態です。月経で血を失いやすい女性に多く、めまいや立ちくらみ、目の疲れ、髪や肌の乾燥、眠りの浅さとして表れやすくなります。血が足りないと、気持ちも不安定になりやすくなります。",
+    strength: "繊細で感受性が豊か。細やかな気配りができます。",
+    policy: "補血養肝：血を養い肝血を補う。血をつくる脾胃も合わせて整える。",
+    points: ["血海", "三陰交", "足三里", "肝兪"],
+    full: "血を養って、からだに血の貯金をためていく施術をしていきます。", short: "血を養うこと",
+    future: "顔色がよく、ふらつきや目の疲れを感じにくいからだ",
+    food: ["ほうれん草・小松菜・にんじん", "黒豆・黒ごま・なつめ・プルーン", "赤身の肉や魚・あさり", "卵"],
+    living: ["早寝（血は夜に養われるとされます）", "スマホやパソコンから目を休める", "足湯・やさしいストレッチ"],
+    less: ["夜更かし・寝る前のスマホ", "無理なダイエット", "目の使い過ぎ"],
+    mind: "ちゃんと休めた日を「よくできた日」と数えてあげてください。" },
+  D: { term: "陰虚", termSub: "肝腎陰虚", yomi: "いんきょ／かんじんいんきょ", nick: "からから・うるおい不足さん", group: "虚",
+    state: "からだを潤し、熱をしずめる「陰」が不足している状態です。うるおいが足りないぶん熱がこもりやすく、乾燥やほてり、寝汗、寝つきの悪さとして表れやすくなります。ゆらぎの時期（更年期）や、がんばり過ぎ・睡眠不足が続くと、陰はさらに消耗しやすくなります。",
+    strength: "頭の回転が速く、行動力があります。",
+    policy: "滋補肝腎・滋陰清熱：陰を補い虚熱を落ち着かせる。刺激はおだやかに、置鍼中心。",
+    points: ["太渓", "照海", "三陰交", "腎兪"],
+    full: "からだにうるおいを補い、ほてりをやさしく落ち着かせる施術をしていきます。", short: "うるおいを補うこと",
+    future: "ほてりや乾きが落ち着いて、夜ぐっすり眠れるからだ",
+    food: ["豆腐・豆乳", "白きくらげ・山芋・れんこん", "梨・ぶどう・トマト", "黒ごま・卵・貝類"],
+    living: ["日付が変わる前に布団に入る", "ゆっくり呼吸するストレッチ", "こまめな水分補給"],
+    less: ["長風呂・サウナで汗をかき過ぎること", "辛い物・お酒のとり過ぎ", "夜更かし"],
+    mind: "「休むこと」も大切な仕事です。予定を詰め込み過ぎないようにしましょう。" },
+  E: { term: "気滞", termSub: "肝気鬱結", yomi: "きたい／かんきうっけつ", nick: "もやもや・ストレスさん", group: "実",
+    state: "気の巡りをととのえる「肝」の働きが滞り、気が詰まっている状態です。ストレスやがまんの影響を受けやすく、イライラや落ち込み、胸やお腹の張り、首肩のこわばり、月経前の不調として表れやすくなります。",
+    strength: "責任感が強く、情熱的。物事をきっちりこなせます。",
+    policy: "疏肝理気：肝気の巡りをよくし、張りや緊張をゆるめる。胸脇・首肩の緊張もほぐす。",
+    points: ["太衝", "合谷", "内関", "膻中"],
+    full: "気の巡りをよくして、張りやもやもや、こわばりをゆるめる施術をしていきます。", short: "気の巡りをよくすること",
+    future: "気持ちが軽く、ストレスをためこまずに過ごせるからだ",
+    food: ["春菊・セロリ・三つ葉・しそ", "みかん・ゆずなどの柑橘", "玉ねぎ・らっきょう", "ジャスミン茶・ミントティー"],
+    living: ["ウォーキングなどリズムよく体を動かす", "胸やわきを伸ばすストレッチ・深呼吸", "柑橘やハーブの香りを楽しむ"],
+    less: ["がまんしてため込むこと", "一日中座りっぱなし", "浅い呼吸のまま過ごすこと"],
+    mind: "好きなことで発散していいんです。ため息も、気を巡らせる自然な動きです。" },
+  F: { term: "瘀血", termSub: "", yomi: "おけつ", nick: "ずきずき・血の巡り不足さん", group: "実",
+    state: "血の巡りが滞り、流れが悪くなっている状態です。冷えや座りっぱなし、ストレスの積み重ねで巡りが悪くなり、同じ場所の刺すような痛み、重い生理痛、頑固な肩こり、くすみやクマとして表れやすくなります。",
+    strength: "粘り強く我慢強い。困難にも向き合える力があります。",
+    policy: "活血化瘀：血の巡りをよくし、痛みをやわらげる。骨盤まわり・下半身を温める。",
+    points: ["血海", "三陰交", "膈兪", "合谷"],
+    full: "血の巡りを助けて、こりや痛みを軽くしていく施術をしていきます。", short: "血の巡りを助けること",
+    future: "こりや痛みが少なく、すっきり軽いからだ",
+    food: ["玉ねぎ・ねぎ・にら", "青魚（いわし・さば）", "黒きくらげ・黒豆", "酢の物・らっきょう"],
+    living: ["湯船でしっかり温まる", "こまめに立って、ふくらはぎを動かす", "肩まわし・骨盤まわりのストレッチ"],
+    less: ["長時間同じ姿勢でいること", "冷房で冷えたまま過ごすこと", "脂っこい物のとり過ぎ"],
+    mind: "「巡ると軽くなる」を感じられると、続けるのが楽しくなります。" },
+  G: { term: "痰湿", termSub: "", yomi: "たんしつ", nick: "むくむく・水はけ不足さん", group: "実",
+    state: "からだに余分な水分や湿気（湿・痰）がたまっている状態です。胃腸の疲れや、甘い物・脂っこい物のとり過ぎ、湿気の多い気候の影響を受けやすく、むくみ、からだの重だるさ、頭の重さ、雨の日の不調として表れやすくなります。",
+    strength: "おおらかで、どっしりとした安定感があります。",
+    policy: "健脾化湿・化痰：脾の運化を助け、余分な水湿をさばく。",
+    points: ["豊隆", "陰陵泉", "中脘", "足三里"],
+    full: "胃腸の働きを助けて、からだにたまった余分な水分をめぐらせる施術をしていきます。", short: "水分のめぐりを助けること",
+    future: "むくみや重だるさが減って、からだも頭もすっきり軽いからだ",
+    food: ["小豆・はと麦・黒豆", "大根・かぶ・ごぼう", "海藻・きのこ", "しょうが・しそ"],
+    living: ["汗ばむ程度の運動を習慣にする", "湯船につかって汗をかく", "除湿をして、湿気をためない"],
+    less: ["甘い物・脂っこい物・お酒", "冷たい飲み物の飲み過ぎ", "夜遅い時間の食事"],
+    mind: "「腹八分目」と「少し動く」から、からだはすっきりしていきます。" },
+  H: { term: "実熱", termSub: "肝火上炎", yomi: "じつねつ／かんかじょうえん", nick: "かっか・のぼせさん", group: "実",
+    state: "からだに余分な熱がこもり、上へのぼりやすくなっている状態です。ストレスやがんばり過ぎ、辛い物・お酒のとり過ぎなどで熱が生まれ、頭痛やのぼせ、顔の赤み、イライラ、便秘として表れやすくなります。",
+    strength: "エネルギッシュで決断力があり、周りを引っぱっていけます。",
+    policy: "清熱瀉火・平肝：こもった熱を冷まし、上にのぼった気を下ろす。上下のバランスをとる配穴。",
+    points: ["太衝", "行間", "曲池", "風池"],
+    full: "こもった熱を冷まして、頭にのぼった気をやさしく下ろす施術をしていきます。", short: "こもった熱を冷ますこと",
+    future: "頭がすっきりして、気持ちもおだやかに過ごせるからだ",
+    food: ["トマト・きゅうり・セロリ", "緑茶・菊花茶・ミントティー", "ごぼう・もやし・豆腐", "柑橘・梨などの果物"],
+    living: ["深呼吸でひと息つく時間をつくる", "足湯で、のぼった熱を下へ", "夜はぬるめのお湯でリラックス"],
+    less: ["辛い物・お酒・揚げ物", "熱い長風呂", "寝る直前までのスマホやパソコン"],
+    mind: "ひと呼吸おく時間が、のぼった熱を冷ましてくれます。" },
+};
+const KEYS = Object.keys(TYPES);
+const QPER = 6;
+
+// 体質の質問。見出しは証の名前を伏せて、からだのテーマで出す。k はどの証の質問か
+const SECTIONS = [
+  { theme: "元気と疲れのこと", qs: [
+    { k: "A", t: "疲れやすく、休んでもなかなか回復しない" },
+    { k: "A", t: "少し動いただけで息切れしたり、汗をかいたりする" },
+    { k: "A", t: "風邪をひきやすく、治るまでに時間がかかる" },
+    { k: "A", t: "声が小さい、または話すと疲れる" },
+    { k: "G", t: "からだが重く、だるさが抜けない" },
+    { k: "C", t: "立ちくらみや、ふわっとするめまいがある" },
+    { k: "B", t: "腰や膝がだるく、冷えると痛みが強くなる" },
+    { k: "D", t: "夕方になると、ほてりや微熱っぽさが出る" } ] },
+  { theme: "冷えとほてりのこと", qs: [
+    { k: "B", t: "手足やお腹、腰が冷えやすい" },
+    { k: "B", t: "寒がりで、夏でも冷房がつらい" },
+    { k: "B", t: "温かい飲み物が好きで、温めるとつらさが楽になる" },
+    { k: "D", t: "肌やのど、目が乾燥しやすい" },
+    { k: "D", t: "手のひらや足の裏がほてる" },
+    { k: "D", t: "寝ているときに汗をかくことがある" },
+    { k: "H", t: "暑がりで、冷たい飲み物がほしくなる" },
+    { k: "H", t: "顔が赤くなりやすい、またはのぼせやすい" } ] },
+  { theme: "胃腸とお通じのこと", qs: [
+    { k: "A", t: "食後に眠くなったり、だるくなったりする" },
+    { k: "A", t: "食欲にムラがある／胃もたれしやすい" },
+    { k: "B", t: "朝方にお腹をこわしやすい、または便がやわらかい" },
+    { k: "B", t: "トイレが近く、夜中にトイレで起きることがある" },
+    { k: "G", t: "胃のあたりがつかえる、吐き気が出やすい、または痰がからみやすい" },
+    { k: "G", t: "甘い物や脂っこい物、お酒が好き" },
+    { k: "D", t: "口が渇きやすく、便がかたくコロコロしやすい" },
+    { k: "H", t: "便秘がちで、尿の色が濃い" } ] },
+  { theme: "気持ちと眠りのこと", qs: [
+    { k: "E", t: "イライラしたり、落ち込んだりしやすい" },
+    { k: "E", t: "ため息が多いと言われる、または自分でも感じる" },
+    { k: "E", t: "のどがつかえる感じや、お腹にガスがたまる感じがある" },
+    { k: "E", t: "わき腹や胸のあたりが張って苦しいことがある" },
+    { k: "E", t: "気分によって体調が変わりやすい" },
+    { k: "H", t: "カッとなりやすく、寝つきが悪い" },
+    { k: "C", t: "眠りが浅く、ささいなことで不安になりやすい" },
+    { k: "G", t: "頭がぼーっとして、集中しにくい" } ] },
+  { theme: "頭とからだの痛みのこと", qs: [
+    { k: "H", t: "ズキズキと脈打つような頭痛や、頭に血がのぼる感じがある" },
+    { k: "F", t: "同じ場所が、チクチク・ズキズキと刺すように痛む" },
+    { k: "F", t: "痛みが夜に強くなる、または肩こりが石のようにかたい" },
+    { k: "C", t: "目が疲れやすい、またはかすむ" },
+    { k: "C", t: "足がつったり、手足がしびれたりすることがある" },
+    { k: "D", t: "セミが鳴くような、高い音の耳鳴りがある" },
+    { k: "G", t: "雨の日や湿気の多い日に、頭痛やだるさが出やすい" },
+    { k: "F", t: "あざができやすい、または足に細い血管が浮き出ている" } ] },
+  { theme: "月経と肌・顔色のこと", note: "月経がない方は、月経の項目はとばしてください。", qs: [
+    { k: "E", t: "月経前に胸やお腹が張る、またはイライラする" },
+    { k: "F", t: "生理痛が重い、または経血にかたまりが混じる" },
+    { k: "C", t: "経血の量が少ない、または月経のあとに疲れやめまいが強くなる" },
+    { k: "F", t: "目の下のクマや、シミ・くすみが気になる" },
+    { k: "F", t: "唇や舌の色が暗く、紫っぽい" },
+    { k: "C", t: "髪がパサつく、抜けやすい／爪が割れやすい" },
+    { k: "G", t: "顔や足がむくみやすい" },
+    { k: "H", t: "にきびや吹き出物ができやすい、または口が苦い" } ] },
+];
+
+// 主訴。goal は患者さんに見せる「目指すこと」、pts は施術者だけが見る標治のツボ候補
+const SYMPTOMS = [
+  { n: "頭痛", goal: "頭痛が起こりにくくなること", pts: ["風池", "太陽", "合谷"] },
+  { n: "肩こり・首こり", goal: "肩や首が軽く感じられること", pts: ["肩井", "風池", "天柱"] },
+  { n: "腹痛", goal: "お腹の痛みが落ち着くこと", pts: ["中脘", "天枢", "足三里"] },
+  { n: "腰痛", goal: "腰が楽に動かせること", pts: ["腎兪", "大腸兪", "委中"] },
+  { n: "睡眠の悩み", goal: "ぐっすり眠れること", pts: ["神門", "安眠", "失眠"] },
+  { n: "自律神経の乱れ", goal: "気持ちとからだのバランスが整うこと", pts: ["内関", "神門", "百会"] },
+  { n: "生理痛", goal: "月経の時期を楽に過ごせること", pts: ["三陰交", "次髎", "地機"] },
+  { n: "生理不順", goal: "月経のリズムが整っていくこと", pts: ["三陰交", "血海", "関元"] },
+  { n: "更年期の症状", goal: "ゆらぎの時期をおだやかに過ごせること", pts: ["太渓", "三陰交", "百会"] },
+  { n: "めまい", goal: "ふらつきが少なくなること", pts: ["百会", "風池", "内関"] },
+  { n: "耳鳴り", goal: "耳鳴りが気になりにくくなること", pts: ["聴宮", "翳風", "中渚"] },
+  { n: "疲れ・だるさ", goal: "疲れにくく、元気に過ごせること", pts: ["足三里", "気海"] },
+  { n: "冷え", goal: "からだが温まりやすくなること", pts: ["関元", "三陰交", "足三里"] },
+  { n: "その他", goal: "気になる不調がやわらぐこと", pts: [] },
+];
+const symBy = (n) => SYMPTOMS.find((s) => s.n === n);
+const SINCE = ["1か月以内", "数か月前から", "1年以上前から", "何年も前から"];
+const LEVEL = ["少し気になる", "つらい", "生活に支障がある"];
+
+// 一般的な鍼灸問診票の安全確認の項目。caution は施術者の画面にだけ出す
+const MENS = ["規則的にある", "不規則", "閉経前後（ゆらぎの時期）", "閉経した", "妊娠中", "産後・授乳中", "該当しない"];
+const EXP = ["はじめて", "受けたことがある"];
+const HEALTH = [
+  { n: "高血圧", caution: "高血圧：体位変換はゆっくり。強い刺激・長時間の施術は避ける。" },
+  { n: "心臓の病気・ペースメーカー", caution: "心疾患・ペースメーカー：低周波（パルス）通電は使わない。" },
+  { n: "糖尿病", caution: "糖尿病：感染に注意。知覚が鈍い部位へのお灸はやけどに注意。" },
+  { n: "血液をさらさらにする薬", caution: "抗凝固薬・抗血小板薬：出血・内出血に注意。抜鍼後の圧迫をしっかり。" },
+  { n: "金属アレルギー", caution: "金属アレルギー：鍼の材質を確認。円皮鍼・パイオネックスは控える。" },
+  { n: "皮膚が弱い・かぶれやすい", caution: "皮膚が弱い：お灸・テープ類はパッチで様子を見る。" },
+  { n: "その他の持病・アレルギー", caution: "その他の持病・アレルギー：内容を口頭で確認する。" },
+];
+const WORRY = ["鍼が痛くないか", "お灸が熱くないか", "着替えや服を脱ぐこと", "施術のあとの体調", "特になし"];
+const MED = ["なし", "あり"];
+// 妊娠中は強い刺激を避けるツボ。自動のツボ候補から外す
+const AVOID_PREG = ["合谷", "三陰交", "肩井", "崑崙", "至陰"];
+
+// 病因。患者さんには「気持ち／天気・季節／暮らし」と出し、施術者には三因で出す
+const CAUSES = [
+  { key: "nai", label: "気持ち", staff: "内因（七情）",
+    tip: "気持ちの疲れが、からだに出やすいタイプです。ため込まずに、話す・書く・深呼吸するなど、こまめに気持ちをほどいてあげましょう。",
+    items: [["心配ごと・考えすぎ", "思"], ["イライラ・怒り", "怒"], ["悲しみ・落ち込み", "悲・憂"], ["不安・こわさ・驚き", "恐・驚"], ["気持ちの高ぶり", "喜"]] },
+  { key: "gai", label: "天気・季節", staff: "外因（六淫）",
+    tip: "天気や季節の影響を受けやすいタイプです。冷えや湿気、乾燥を先回りして防ぐと、ゆらぎが小さくなります。",
+    items: [["寒さ・冷房", "寒"], ["暑さ", "暑・火"], ["雨・湿気・低気圧", "湿"], ["乾燥", "燥"], ["風・季節の変わり目", "風"]] },
+  { key: "fu", label: "暮らし", staff: "不内外因",
+    tip: "毎日の暮らし方が、体調に表れやすいタイプです。食事と睡眠のリズムを整えることが、いちばんの近道です。",
+    items: [["食べ過ぎ・不規則な食事", "飲食不節"], ["冷たい物・甘い物・脂っこい物", "飲食偏嗜"], ["働き過ぎ・疲れの積み重ね", "労倦"], ["睡眠不足・夜更かし", "労倦"], ["運動不足・座りっぱなし", "逸"], ["出産・手術・けが", "外傷ほか"]] },
+];
+
+// 通院の流れ。期間は施術者が選ぶので、ここでは時期の名前だけにする
+const STAGES = [
+  { when: "はじめの時期", name: "つらさをやわらげる", text: "まずは、いちばんのお悩みを少しでも楽にすることから始めます。間をあけずに通うと、からだが変化を覚えやすくなります。" },
+  { when: "なかの時期", name: "からだを整える", text: "つらさが出にくいように、体質そのものを少しずつ整えていきます。調子をみながら、通う間隔をあけていきます。" },
+  { when: "その先", name: "よい状態を保つ", text: "整ったからだを保つために、ときどきのメンテナンスで、季節や暮らしの変化にゆらぎにくいからだを目指します。" },
+];
+const PACE = ["週2回", "週1回", "2週に1回", "月1回"];
+const TERM = ["1か月", "3か月", "6か月", "様子を見ながら相談"];
+
+// 0 受付 / 1 健康のこと / 2 お悩み / 3〜8 体質の質問 / 9 きっかけ / 10 施術者の確認 / 11 結果
+const Q0 = 3, CAUSE_STEP = Q0 + SECTIONS.length, STAFF_STEP = CAUSE_STEP + 1, RESULT_STEP = STAFF_STEP + 1, TOTAL = RESULT_STEP + 1;
+
+let state, step;
+function fresh() {
+  state = {
+    name: "", date: new Date().toISOString().slice(0, 10), age: "", mens: "", exp: "",
+    health: new Set(), worry: new Set(), med: "", medNote: "",
+    syms: new Set(), top: "", since: "", level: "", symNote: "",
+    checks: new Set(), causes: new Set(),
+    main: null, sub: null, policy: "", points: "", plain: "", goal: "", future: "",
+    pace: "週1回", term: "3か月",
+    termNote: "からだが変わるには時間がかかります。まずは3か月を一区切りに、変化を一緒に確かめていきます。", comment: "",
+  };
+  step = 0;
+}
+fresh();
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const termFull = (t) => t.termSub ? `${t.term}（${t.termSub}）` : t.term;
+const pct = (v) => `${Math.round(v * 100)}%`;
+const pregnant = () => state.mens === "妊娠中";
+// 主訴の並び。いちばん気になるものを先頭にする
+const symList = () => [...state.syms].sort((a, b) => (b === state.top) - (a === state.top));
+
+function counts() {
+  const n = Object.fromEntries(KEYS.map((k) => [k, 0]));
+  SECTIONS.forEach((s, i) => s.qs.forEach((q, j) => { if (state.checks.has(`${i}-${j}`)) n[q.k]++; }));
+  return KEYS.map((k) => ({ ...TYPES[k], key: k, n: n[k] }));
+}
+
+// 八綱の目安。虚＝A〜D、実＝E〜H、寒＝陽虚、熱＝陰虚・実熱。それぞれ質問数で割って割合にする
+function axes() {
+  const c = Object.fromEntries(counts().map((t) => [t.key, t.n]));
+  const kyo = (c.A + c.B + c.C + c.D) / (QPER * 4), jitsu = (c.E + c.F + c.G + c.H) / (QPER * 4);
+  const cold = c.B / QPER, heat = (c.D + c.H) / (QPER * 2);
+  return { kyo, jitsu, cold, heat, x: heat - cold, y: jitsu - kyo, yin: (kyo + cold) / 2, yang: (jitsu + heat) / 2, any: state.checks.size > 0 };
+}
+const lean = (a, b, la, lb) => Math.abs(a - b) < 0.15 ? "偏り小さめ" : a > b ? `${la}寄り` : `${lb}寄り`;
+
+function judge() {
+  const cs = counts();
+  const max = Math.max(...cs.map((c) => c.n));
+  if (max === 0) return { main: [], sub: [], cs };
+  const main = cs.filter((c) => c.n === max);
+  const rest = cs.filter((c) => c.n < max && c.n > 0);
+  const second = rest.length ? Math.max(...rest.map((c) => c.n)) : 0;
+  const sub = second ? rest.filter((c) => c.n === second) : [];
+  return { main, sub, cs };
+}
+
+// 自動判定から施術者画面の初期値を決める。同数のときは先頭を選び、施術者が変えられる
+function autoPick() {
+  const { main, sub } = judge();
+  state.main = main.length ? main[0].key : null;
+  state.sub = main.length > 1 ? main[1].key : sub.length ? sub[0].key : null;
+  fillPlan();
+}
+
+function fillPlan() {
+  const m = state.main && TYPES[state.main], s = state.sub && TYPES[state.sub];
+  const syms = symList();
+  const lines = [];
+  if (m) lines.push(`本治：${m.policy}`);
+  if (s) lines.push(`あわせて${termFull(s)}に配慮：${s.policy}`);
+  if (syms.length) lines.push(`標治：${syms.join("・")}に対して、局所と遠隔のツボで症状をやわらげる。`);
+  if (pregnant()) lines.push(`妊娠中：刺激はごく軽く、${AVOID_PREG.join("・")}などへの刺激と腹部・腰仙部への強い刺激は避ける。`);
+  state.policy = lines.join("\n");
+
+  let pts = [...(m ? m.points : []), ...(s ? s.points.slice(0, 2) : []), ...syms.slice(0, 3).flatMap((n) => symBy(n).pts.slice(0, 2))];
+  if (pregnant()) pts = pts.filter((p) => !AVOID_PREG.includes(p));
+  state.points = [...new Set(pts)].join("、");
+
+  const plain = [];
+  if (m) plain.push(m.full);
+  if (s) plain.push(`あわせて、${s.short}も大切にします。`);
+  plain.push("そして、からだ全体のバランスを整えて、不調が出にくい土台をつくっていきます。");
+  state.plain = plain.join("");
+
+  const goal = [];
+  if (syms.length) {
+    goal.push(`いちばんのお悩みの「${syms[0]}」は、${symBy(syms[0]).goal}を目指します。`);
+    if (syms.length > 1) goal.push(`あわせて、${syms.slice(1).join("・")}も一緒にみていきます。`);
+    goal.push("つらさをやわらげるだけでなく、不調が出にくいからだの土台づくりを大切にします。");
+  } else {
+    goal.push("からだ全体のバランスを整え、不調が出にくいからだの土台づくりを目指します。");
+  }
+  state.goal = goal.join("");
+  state.future = m ? m.future : "毎日を楽に過ごせるからだ";
+}
+
+function render(keepScroll) {
+  const s = $("screen");
+  const label = step === 0 ? "受付" : step === 1 ? "健康のこと" : step === 2 ? "お悩み"
+    : step < CAUSE_STEP ? `体質の質問 ${step - Q0 + 1} / ${SECTIONS.length}` : step === CAUSE_STEP ? "きっかけ" : step === STAFF_STEP ? "施術者の確認" : "結果";
+  $("stepLabel").textContent = label;
+  $("progress").innerHTML = Array.from({ length: TOTAL }, (_, i) => `<span class="${i <= step ? "done" : ""}"></span>`).join("");
+  $("backBtn").disabled = step === 0;
+  $("nextBtn").textContent = step === 0 ? "はじめる" : step < CAUSE_STEP ? "次へ" : step === CAUSE_STEP ? "回答を終える" : step === STAFF_STEP ? "患者さん用の結果を表示" : "次の方へ";
+
+  if (step === 0) s.innerHTML = intakeHTML();
+  else if (step === 1) s.innerHTML = healthHTML();
+  else if (step === 2) s.innerHTML = symptomHTML();
+  else if (step < CAUSE_STEP) s.innerHTML = sectionHTML(step - Q0);
+  else if (step === CAUSE_STEP) s.innerHTML = causeHTML();
+  else if (step === STAFF_STEP) s.innerHTML = staffHTML();
+  else s.innerHTML = resultHTML();
+  bind();
+  if (!keepScroll) window.scrollTo({ top: 0 });
+}
+
+// 1つだけ選ぶ・いくつでも選ぶ ボタンの列
+const one = (field, list) => list.map((t) => `<button type="button" class="chip" data-one="${field}" data-v="${esc(t)}" aria-pressed="${state[field] === t}">${esc(t)}</button>`).join("");
+const many = (field, list) => list.map((t) => `<button type="button" class="chip" data-many="${field}" data-v="${esc(t)}" aria-pressed="${state[field].has(t)}">${esc(t)}</button>`).join("");
+
+function intakeHTML() {
+  return `<div class="stack">
+    <div class="result-head">
+      <h2>今のからだの様子を、いっしょに確かめていきましょう</h2>
+      <p class="lead">気になる症状と、からだの傾向についての質問です。当てはまるものをタップするだけで、8分ほどで終わります。診断ではなく、東洋医学の考え方でからだの傾向を知るための確認表です。</p>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <label for="fName">お名前<span class="opt">任意</span></label>
+        <input id="fName" type="text" autocomplete="off" value="${esc(state.name)}" placeholder="例：山田 花子">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="fDate">ご来院日</label>
+          <input id="fDate" type="date" value="${esc(state.date)}">
+        </div>
+        <div class="field">
+          <label for="fAge">年齢<span class="opt">任意</span></label>
+          <input id="fAge" type="number" inputmode="numeric" min="10" max="100" value="${esc(state.age)}" placeholder="例：45">
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="expLbl">鍼灸を受けたことは</span>
+        <div class="chips" role="group" aria-labelledby="expLbl">${one("exp", EXP)}</div>
+      </div>
+      <div class="field">
+        <span class="label" id="mensLbl">月経の状況<span class="opt">1つ選ぶ</span></span>
+        <div class="chips" role="group" aria-labelledby="mensLbl">${one("mens", MENS)}</div>
+      </div>
+    </div>
+    <p class="small">入力した内容はこの画面の中だけで使い、どこにも送信・保存されません。</p>
+  </div>`;
+}
+
+function healthHTML() {
+  return `<div class="stack">
+    <div class="result-head">
+      <span class="eyebrow">安心して施術を受けていただくために</span>
+      <h2>健康のことを教えてください</h2>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <span class="label" id="healthLbl">当てはまるもの<span class="opt">なければ、そのまま次へ</span></span>
+        <div class="chips" role="group" aria-labelledby="healthLbl">${many("health", HEALTH.map((h) => h.n))}</div>
+      </div>
+      <div class="field">
+        <span class="label" id="medLbl">今、病院に通っている・お薬を飲んでいる</span>
+        <div class="chips" role="group" aria-labelledby="medLbl">${one("med", MED)}</div>
+      </div>
+      <div class="field" ${state.med === "あり" ? "" : "hidden"}>
+        <label for="fMedNote">病名やお薬の名前<span class="opt">任意・わかる範囲で</span></label>
+        <input id="fMedNote" type="text" autocomplete="off" value="${esc(state.medNote)}" placeholder="例：甲状腺のお薬">
+      </div>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <span class="label" id="worryLbl">鍼灸について、心配なこと<span class="opt">いくつでも</span></span>
+        <div class="chips" role="group" aria-labelledby="worryLbl">${many("worry", WORRY)}</div>
+      </div>
+      <p class="small">心配なことは、施術の前に先生が一つずつご説明します。</p>
+    </div>
+  </div>`;
+}
+
+function symptomHTML() {
+  const list = symList();
+  return `<div class="stack">
+    <div class="result-head">
+      <span class="eyebrow">今日いらしたきっかけ</span>
+      <h2>今、気になっている症状は？</h2>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <span class="label" id="symLbl">当てはまるものをすべて</span>
+        <div class="chips big" role="group" aria-labelledby="symLbl">${many("syms", SYMPTOMS.map((s) => s.n))}</div>
+      </div>
+      <div class="field" ${list.length > 1 ? "" : "hidden"}>
+        <span class="label" id="topLbl">その中で、いちばん気になるものは？</span>
+        <div class="chips" role="group" aria-labelledby="topLbl">${one("top", list)}</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <span class="label" id="sinceLbl">いつ頃から</span>
+        <div class="chips" role="group" aria-labelledby="sinceLbl">${one("since", SINCE)}</div>
+      </div>
+      <div class="field">
+        <span class="label" id="levelLbl">つらさは</span>
+        <div class="chips" role="group" aria-labelledby="levelLbl">${one("level", LEVEL)}</div>
+      </div>
+      <div class="field">
+        <label for="fSymNote">くわしい様子・その他の症状<span class="opt">任意</span></label>
+        <textarea id="fSymNote" rows="2" placeholder="例：右の肩から首にかけて。雨の前の日に強くなる。">${esc(state.symNote)}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function sectionHTML(i) {
+  const sec = SECTIONS[i];
+  const n = sec.qs.filter((_, j) => state.checks.has(`${i}-${j}`)).length;
+  return `<div class="stack">
+    <div class="result-head">
+      <span class="eyebrow">体質の質問 ${i + 1} / ${SECTIONS.length}</span>
+      <h2>${esc(sec.theme)}</h2>
+    </div>
+    <p class="howto">ここ1〜2か月のからだを思い出して、当てはまるものをタップしてください。当てはまらなければ、そのまま次へ進んで大丈夫です。${sec.note ? esc(sec.note) : ""}</p>
+    <div class="qs">
+      ${sec.qs.map((q, j) => `<button type="button" class="q" data-q="${i}-${j}" aria-pressed="${state.checks.has(`${i}-${j}`)}">
+        <span class="box">${CHECK_SVG}</span><span class="txt">${esc(q.t)}</span></button>`).join("")}
+    </div>
+    <p class="count-note" id="countNote">当てはまる：${n} / ${sec.qs.length}</p>
+  </div>`;
+}
+
+function causeHTML() {
+  return `<div class="stack">
+    <div class="result-head">
+      <span class="eyebrow">最後の質問です</span>
+      <h2>体調をくずすきっかけになりやすいものは？</h2>
+    </div>
+    <p class="howto">「これがあると調子が悪くなる」と感じるものを、いくつでもタップしてください。</p>
+    ${CAUSES.map((g) => `<div class="panel">
+      <span class="group-h" id="cg-${g.key}">${esc(g.label)}</span>
+      <div class="chips" role="group" aria-labelledby="cg-${g.key}">
+        ${g.items.map(([t]) => `<button type="button" class="chip" data-cause="${esc(t)}" aria-pressed="${state.causes.has(t)}">${esc(t)}</button>`).join("")}
+      </div>
+    </div>`).join("")}
+  </div>`;
+}
+
+function barsHTML(cs) {
+  return `<div class="bars">${cs.map((c) => `<div class="bar-row" style="--tc: var(--${c.key})">
+      <span class="lbl">${esc(c.term)}</span>
+      <span class="track"><span class="fill" style="width:${(c.n / QPER) * 100}%"></span></span>
+      <span class="n">${c.n}/${QPER}</span></div>`).join("")}</div>`;
+}
+
+// 八綱の図。横＝寒⇄熱、縦＝虚⇄実
+function hakkoSVG(a) {
+  const c = 110, r = 88, px = c + a.x * r, py = c - a.y * r;
+  const t = (x, y, s, anchor = "middle", fill = "var(--muted)") => `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="12" style="fill:${fill}">${s}</text>`;
+  return `<svg viewBox="0 0 220 220" role="img" aria-label="虚実と寒熱の傾向を示す図">
+    <rect x="${c - r}" y="${c - r}" width="${r * 2}" height="${r * 2}" rx="10" style="fill:var(--bg);stroke:var(--line)"/>
+    <line x1="${c - r}" y1="${c}" x2="${c + r}" y2="${c}" style="stroke:var(--line);stroke-width:1.5"/>
+    <line x1="${c}" y1="${c - r}" x2="${c}" y2="${c + r}" style="stroke:var(--line);stroke-width:1.5"/>
+    ${t(c, 15, "実")}${t(c, 214, "虚")}${t(8, c + 4, "寒", "start")}${t(212, c + 4, "熱", "end")}
+    ${t(c - r + 8, c - r + 18, "実寒", "start")}${t(c + r - 8, c - r + 18, "実熱（陽）", "end")}
+    ${t(c - r + 8, c + r - 8, "虚寒（陰）", "start")}${t(c + r - 8, c + r - 8, "虚熱", "end")}
+    ${a.any ? `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="9" style="fill:var(--staff);stroke:var(--surface);stroke-width:3"/>` : ""}
+  </svg>`;
+}
+
+function cautionList() {
+  const L = HEALTH.filter((h) => state.health.has(h.n)).map((h) => h.caution);
+  if (pregnant()) L.push(`妊娠中：刺激はごく軽く。${AVOID_PREG.join("・")}はツボ候補から外してある。`);
+  if (state.mens === "産後・授乳中") L.push("産後・授乳中：体力の回復に合わせて、刺激量を少なめに。");
+  if (state.med === "あり") L.push(`通院・服薬あり${state.medNote ? `（${state.medNote}）` : ""}：内容を確認する。`);
+  if (state.exp === "はじめて") L.push("鍼灸ははじめて：細い鍼・少ない本数から。施術の流れを先に説明する。");
+  const w = [...state.worry].filter((t) => t !== "特になし");
+  if (w.length) L.push(`心配なこと：${w.join("、")}`);
+  return L;
+}
+
+function causeStaffText() {
+  return CAUSES.map((g) => {
+    const hit = g.items.filter(([t]) => state.causes.has(t));
+    return hit.length ? `${g.staff}：${hit.map(([t, k]) => `${t}（${k}）`).join("、")}` : "";
+  }).filter(Boolean);
+}
+
+function staffHTML() {
+  const { cs, main } = judge();
+  const a = axes();
+  const autoText = main.length ? `自動判定：メイン ${main.map((c) => c.term).join("・")}` : "自動判定：当てはまる項目なし";
+  const chip = (field, k, label) => `<button type="button" class="chip" data-pick="${field}" data-key="${k}" aria-pressed="${state[field] === (k || null)}">${esc(label)}</button>`;
+  const cautions = cautionList();
+  const causes = causeStaffText();
+  const syms = symList();
+  return `<div class="stack staff-screen">
+    <div class="staff-banner">
+      <strong>施術者の方へ</strong>
+      <span>患者さんから iPad を受け取って、この画面で証と方針を確認してください。決めた内容が次の結果画面に出ます。</span>
+    </div>
+    ${cautions.length ? `<div class="warn"><strong>施術の前に確認すること</strong><ul>${cautions.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>` : ""}
+    <div class="panel">
+      <span class="eyebrow">主訴</span>
+      <dl class="kv">
+        <dt>症状</dt><dd>${syms.length ? esc(syms.join("、")) : "（未選択）"}</dd>
+        <dt>いちばん</dt><dd>${esc(syms[0] || "―")}</dd>
+        <dt>いつ頃から</dt><dd>${esc(state.since || "―")}</dd>
+        <dt>つらさ</dt><dd>${esc(state.level || "―")}</dd>
+        ${state.symNote ? `<dt>くわしく</dt><dd class="pre">${esc(state.symNote)}</dd>` : ""}
+        <dt>月経</dt><dd>${esc(state.mens || "―")}</dd>
+      </dl>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">回答の集計（証ごと）</span>
+      ${barsHTML(cs)}
+      <p class="small">${esc(autoText)}。脈・舌・腹診・お話の内容とあわせて、下で証を決めてください。</p>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">八綱の目安</span>
+      <div class="hakko">
+        ${hakkoSVG(a)}
+        <dl class="kv">
+          <dt>虚実</dt><dd>虚 ${pct(a.kyo)}・実 ${pct(a.jitsu)} → ${lean(a.kyo, a.jitsu, "虚", "実")}</dd>
+          <dt>寒熱</dt><dd>寒 ${pct(a.cold)}・熱 ${pct(a.heat)} → ${lean(a.cold, a.heat, "寒", "熱")}</dd>
+          <dt>陰陽</dt><dd>${lean(a.yin, a.yang, "陰", "陽")}</dd>
+          <dt>病因</dt><dd>${causes.length ? causes.map((c) => esc(c)).join("<br>") : "（選択なし）"}</dd>
+        </dl>
+      </div>
+      <p class="small">表裏は問診だけでは判断しにくいため、急な発症・悪寒発熱の有無などを口頭で確認してください。</p>
+    </div>
+    <div class="panel">
+      <div class="field">
+        <span class="label" id="mainLbl">メインの証</span>
+        <div class="chips" role="group" aria-labelledby="mainLbl">${KEYS.map((k) => chip("main", k, termFull(TYPES[k]))).join("")}</div>
+      </div>
+      <div class="field">
+        <span class="label" id="subLbl">サブの証</span>
+        <div class="chips" role="group" aria-labelledby="subLbl">${chip("sub", "", "なし")}${KEYS.map((k) => chip("sub", k, termFull(TYPES[k]))).join("")}</div>
+      </div>
+      <p class="small">証を変えると、下の施術方針・ツボ・患者さんへの説明・目的が書き直されます。</p>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">先生だけが見る内容（結果画面には出ません）</span>
+      <div class="field">
+        <label for="fPolicy">施術方針</label>
+        <textarea id="fPolicy" rows="6">${esc(state.policy)}</textarea>
+      </div>
+      <div class="field">
+        <label for="fPoints">主に使うツボ<span class="opt">「、」で区切る</span></label>
+        <input id="fPoints" type="text" value="${esc(state.points)}">
+      </div>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">患者さんに見せる内容</span>
+      <div class="field">
+        <label for="fGoal">鍼灸に通う目的</label>
+        <textarea id="fGoal" rows="3">${esc(state.goal)}</textarea>
+      </div>
+      <div class="field">
+        <label for="fPlain">施術の説明<span class="opt">専門用語を使わない言い方で</span></label>
+        <textarea id="fPlain" rows="3">${esc(state.plain)}</textarea>
+      </div>
+      <div class="field">
+        <label for="fFuture">その先に目指すからだ</label>
+        <input id="fFuture" type="text" value="${esc(state.future)}">
+      </div>
+      <div class="field">
+        <span class="label" id="paceLbl">通院のペース</span>
+        <div class="chips" role="group" aria-labelledby="paceLbl">${one("pace", PACE)}</div>
+      </div>
+      <div class="field">
+        <span class="label" id="termLbl">通う期間</span>
+        <div class="chips" role="group" aria-labelledby="termLbl">${one("term", TERM)}</div>
+      </div>
+      <div class="field">
+        <label for="fTermNote">期間についての説明</label>
+        <textarea id="fTermNote" rows="2">${esc(state.termNote)}</textarea>
+      </div>
+      <div class="field">
+        <label for="fComment">患者さんへのひとこと<span class="opt">任意</span></label>
+        <textarea id="fComment" rows="3" placeholder="例：まずは肩の重さを軽くして、そのあと眠りも一緒に整えていきましょう。">${esc(state.comment)}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function meterHTML(l, r, lc, rc, v) {
+  const left = Math.max(5, Math.min(95, 50 + v * 45));
+  return `<div class="meter">
+    <div class="ends"><span>${l}</span><span class="mid">ちょうどよい</span><span>${r}</span></div>
+    <div class="mtrack" style="--l: var(--${lc}); --r: var(--${rc})"><span class="dot" style="left:${left.toFixed(1)}%"></span></div>
+  </div>`;
+}
+
+function resultHTML() {
+  const m = state.main && TYPES[state.main], s = state.sub && TYPES[state.sub];
+  const a = axes();
+  const syms = symList();
+  const causeGroups = CAUSES.filter((g) => g.items.some(([t]) => state.causes.has(t)));
+
+  const purpose = `<div class="panel">
+      <span class="eyebrow">鍼灸に通う目的</span>
+      ${syms.length ? `<div class="tags">${syms.map((n, i) => `<span class="${i === 0 ? "top" : ""}">${esc(n)}</span>`).join("")}</div>` : ""}
+      ${state.goal ? `<p class="goal pre">${esc(state.goal)}</p>` : ""}
+    </div>`;
+
+  const stateBlock = m ? `<div class="sho-card" style="--tc: var(--${state.main})">
+      <span class="role">あなたは今、こんなからだの状態です</span>
+      <span class="term">${esc(m.nick)}</span>
+      <span class="yomi">東洋医学では「${esc(termFull(m))}」といいます</span>
+      <p>${esc(m.state)}</p>
+      <p class="strength"><b>あなたの強み</b>　${esc(m.strength)}</p>
+      ${s ? `<div class="sub-line" style="--tc: var(--${state.sub})"><span class="tag">あわせて見られる傾向</span><span class="t">${esc(s.nick)}</span><span class="small">${esc(s.state.split("。")[0])}。</span></div>` : ""}
+    </div>` : `<div class="panel"><span class="eyebrow">今のからだの状態</span><p>今回の確認では、大きな偏りは見られませんでした。今のよい状態を保てるよう、からだ全体のバランスを整えていきましょう。</p></div>`;
+
+  const balance = a.any ? `<div class="panel">
+      <span class="eyebrow">からだのバランス</span>
+      <div class="meters">
+        ${meterHTML("冷えやすい", "熱がこもりやすい", "B", "H", a.x)}
+        ${meterHTML("エネルギーが足りない", "巡りが滞りやすい", "A", "E", a.y)}
+      </div>
+      <p class="small">●の位置が真ん中に近いほど、バランスがとれている状態です。</p>
+    </div>` : "";
+
+  const causeBlock = causeGroups.length ? `<div class="panel">
+      <span class="eyebrow">体調をくずしやすいきっかけ</span>
+      ${causeGroups.map((g) => `<div class="field">
+        <span class="label">${esc(g.label)}：${esc(g.items.filter(([t]) => state.causes.has(t)).map(([t]) => t).join("、"))}</span>
+        <p>${esc(g.tip)}</p></div>`).join("")}
+    </div>` : "";
+
+  const adv = (h, color, items) => `<div class="adv" style="--hc: var(--${color})"><span class="h">${h}</span><ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>`;
+  const adviceBlock = m ? `<div class="panel">
+      <span class="eyebrow">暮らしのアドバイス</span>
+      <div class="advice">
+        ${adv("おすすめの食材", state.main, m.food)}
+        ${adv("おすすめの過ごし方", state.main, m.living)}
+        ${adv("控えめにしたいこと", state.main, m.less)}
+      </div>
+      ${s ? `<p class="small">あわせて見られる「${esc(s.nick)}」の傾向には、${esc(s.food.slice(0, 2).join("、"))}などもおすすめです。</p>` : ""}
+      <p class="comment">${esc(m.mind)}</p>
+    </div>` : "";
+
+  const headache = ["頭痛", "めまい", "耳鳴り"].some((n) => state.syms.has(n));
+  return `<div class="stack">
+    <div class="result-head">
+      <span class="eyebrow">${esc(state.date)}${state.name ? `　${esc(state.name)} 様` : ""}</span>
+      <h2>体調確認の結果と、これからのこと</h2>
+    </div>
+    ${purpose}
+    ${stateBlock}
+    ${balance}
+    ${causeBlock}
+    <div class="panel">
+      <span class="eyebrow">これからの施術</span>
+      ${state.plain ? `<p class="pre">${esc(state.plain)}</p>` : ""}
+      ${state.comment ? `<p class="comment pre">${esc(state.comment)}</p>` : ""}
+      <div class="plan-grid">
+        <div class="plan-item"><span class="k">通院のペース</span><span class="v">${esc(state.pace)}</span></div>
+        <div class="plan-item"><span class="k">通う期間</span><span class="v">${esc(state.term)}</span></div>
+      </div>
+      ${state.termNote ? `<p>${esc(state.termNote)}</p>` : ""}
+      <h3>通院の流れ</h3>
+      <div class="stages">${STAGES.map((st) => `<div class="stage"><span class="when">${st.when}</span><b>${st.name}</b><p>${st.text}</p></div>`).join("")}</div>
+      ${state.future ? `<div class="future"><span class="eyebrow">その先に目指すからだ</span><span class="v">${esc(state.future)}</span></div>` : ""}
+    </div>
+    ${adviceBlock}
+    <div class="believe">
+      <p>からだは、ゆっくり変わっていきます。</p>
+      <p>長いあいだかけてできた不調は、少しずつほどけていきます。よくなったり、ゆらいだりをくり返しながら、からだは前に進んでいます。</p>
+      <p>つらいときは、ひとりでがんばらなくて大丈夫です。</p>
+      <p class="last">楽に過ごせる毎日に向かって、一緒に進んでいきましょう。</p>
+    </div>
+    <p class="notice">施術のあとに、だるさや眠気が出ることがあります。多くは一時的なものですが、気になることがあれば遠慮なくお知らせください。当日は水分をとって、ゆっくり過ごしましょう。</p>
+    ${pregnant() ? `<p class="notice">妊娠中の方へ：時期に合わせて、施術の内容や刺激をやさしく調整します。ご自宅でのツボ押しやお灸は、施術者に相談してからにしましょう。</p>` : ""}
+    ${state.med === "あり" ? `<p class="notice">通院中・服薬中の方へ：ご自宅でのセルフケアを始める前に、主治医にもご相談ください。</p>` : ""}
+    ${headache ? `<p class="notice">急に起きた激しい頭痛やめまい、手足のしびれ、ろれつが回らないなどの症状があるときは、すぐに医療機関を受診してください。</p>` : ""}
+    <p class="small">この確認表は病気の診断ではなく、東洋医学の考え方でからだの傾向を知るためのものです。からだの変化には個人差があります。体調に不安がある場合や治療中の方は、医師・専門家にご相談ください。</p>
+    <div class="panel no-print">
+      <span class="eyebrow">患者さんにお渡しする</span>
+      <div class="out-row">
+        ${canPrint ? `<button class="btn primary" id="printBtn" type="button">結果を印刷・PDFに保存</button>` : ""}
+        <button class="btn" id="copyPatientBtn" type="button">患者さん用の結果をコピー</button>
+        <span class="copied" id="copiedPatient" hidden>コピーしました</span>
+      </div>
+      <p class="small">${canPrint ? "印刷画面で「PDFに保存」を選ぶと、患者さんにお渡しできるファイルになります。" : "印刷ボタンは、GitHub Pages などに置いたページで表示されます。"}コピーした文章は、メールや LINE に貼り付けて送れます。施術者用まとめは、印刷やコピーには含まれません。</p>
+      <pre id="patientPre" class="staff-pre" hidden></pre>
+    </div>
+    <details class="panel staff">
+      <summary>施術者用まとめ（カルテ転記用）</summary>
+      <pre id="summary">${esc(summaryText())}</pre>
+      <div class="copy-row">
+        <button class="btn" id="copyBtn" type="button">まとめをコピー</button>
+        <span class="copied" id="copied" hidden>コピーしました</span>
+      </div>
+    </details>
+  </div>`;
+}
+
+// claude.ai の中（枠の中）では印刷できないので、単独のページとして開いたときだけ印刷ボタンを出す
+const canPrint = (() => { try { return window.self === window.top; } catch (e) { return false; } })();
+
+function patientText() {
+  const m = state.main && TYPES[state.main], s = state.sub && TYPES[state.sub];
+  const L = [];
+  L.push(`鍼灸体調確認の結果（${state.date}）${state.name ? `　${state.name} 様` : ""}`);
+  L.push("");
+  L.push("■ 鍼灸に通う目的");
+  if (state.syms.size) L.push(`気になる症状：${symList().join("、")}`);
+  if (state.goal) L.push(state.goal);
+  L.push("");
+  if (m) {
+    L.push(`■ 今のからだの状態：${m.nick}（東洋医学では「${termFull(m)}」）`);
+    L.push(m.state);
+    L.push(`あなたの強み：${m.strength}`);
+    if (s) L.push(`あわせて見られる傾向：${s.nick}`);
+  } else {
+    L.push("■ 今のからだの状態：大きな偏りは見られませんでした。");
+  }
+  const groups = CAUSES.filter((g) => g.items.some(([t]) => state.causes.has(t)));
+  if (groups.length) {
+    L.push("");
+    L.push("■ 体調をくずしやすいきっかけ");
+    groups.forEach((g) => L.push(`${g.label}：${g.tip}`));
+  }
+  L.push("");
+  L.push("■ これからの施術");
+  if (state.plain) L.push(state.plain);
+  if (state.comment) L.push(state.comment);
+  L.push(`通院のペース：${state.pace}　通う期間：${state.term}`);
+  if (state.termNote) L.push(state.termNote);
+  L.push(`通院の流れ：${STAGES.map((st) => st.name).join(" → ")}`);
+  if (state.future) L.push(`その先に目指すからだ：${state.future}`);
+  if (m) {
+    L.push("");
+    L.push("■ 暮らしのアドバイス");
+    L.push(`おすすめの食材：${m.food.join("、")}`);
+    L.push(`おすすめの過ごし方：${m.living.join("、")}`);
+    L.push(`控えめにしたいこと：${m.less.join("、")}`);
+    L.push(m.mind);
+  }
+  L.push("");
+  L.push("からだは、ゆっくり変わっていきます。楽に過ごせる毎日に向かって、一緒に進んでいきましょう。");
+  L.push("");
+  L.push("※この確認表は病気の診断ではなく、東洋医学の考え方でからだの傾向を知るためのものです。体調に不安がある場合や治療中の方は、医師・専門家にご相談ください。");
+  return L.join("\n");
+}
+
+function selectEl(el) {
+  const r = document.createRange(); r.selectNodeContents(el);
+  const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+}
+
+function copyText(text, okId, onFail) {
+  const done = () => { $(okId).hidden = false; setTimeout(() => ($(okId).hidden = true), 2000); };
+  try { navigator.clipboard.writeText(text).then(done, onFail); } catch (e) { onFail(); }
+}
+
+function summaryText() {
+  const { cs } = judge();
+  const a = axes();
+  const m = state.main && TYPES[state.main], s = state.sub && TYPES[state.sub];
+  const health = [...state.health];
+  const lines = [];
+  lines.push(`【鍼灸体調確認表】${state.date || "日付未入力"}`);
+  lines.push(`氏名：${state.name || "（未記入）"}　年齢：${state.age || "（未記入）"}　鍼灸：${state.exp || "―"}　月経：${state.mens || "―"}`);
+  lines.push(`既往・注意：${health.length ? health.join("、") : "なし"}　通院・服薬：${state.med || "―"}${state.medNote ? `（${state.medNote}）` : ""}`);
+  const w = [...state.worry].filter((t) => t !== "特になし");
+  if (w.length) lines.push(`心配なこと：${w.join("、")}`);
+  lines.push(`主訴：${state.syms.size ? symList().join("、") : "（未選択）"}　いつから：${state.since || "―"}　つらさ：${state.level || "―"}`);
+  if (state.symNote) lines.push(`主訴メモ：${state.symNote.replace(/\n/g, " ")}`);
+  lines.push(`集計：${cs.map((c) => `${c.term}${c.n}`).join(" / ")}（各${QPER}問）`);
+  lines.push(`八綱：${lean(a.kyo, a.jitsu, "虚", "実")}（虚${pct(a.kyo)}・実${pct(a.jitsu)}）／${lean(a.cold, a.heat, "寒", "熱")}（寒${pct(a.cold)}・熱${pct(a.heat)}）／陰陽：${lean(a.yin, a.yang, "陰", "陽")}`);
+  const causes = causeStaffText();
+  lines.push(`病因：${causes.length ? causes.join("　") : "（選択なし）"}`);
+  lines.push(`メインの証：${m ? termFull(m) : "なし"}　サブの証：${s ? termFull(s) : "なし"}`);
+  lines.push(`施術方針：${state.policy.replace(/\n/g, " ")}`);
+  lines.push(`ツボ：${state.points}`);
+  lines.push(`目的：${state.goal.replace(/\n/g, " ")}`);
+  lines.push(`通院：${state.pace}　通う期間：${state.term}`);
+  if (state.comment) lines.push(`ひとこと：${state.comment.replace(/\n/g, " ")}`);
+  lines.push("");
+  lines.push("該当項目：");
+  KEYS.forEach((k) => {
+    const hit = [];
+    SECTIONS.forEach((sec, i) => sec.qs.forEach((q, j) => { if (q.k === k && state.checks.has(`${i}-${j}`)) hit.push(q.t); }));
+    if (hit.length) lines.push(`${TYPES[k].term}）${hit.join("／")}`);
+  });
+  return lines.join("\n");
+}
+
+function bind() {
+  const on = (id, key) => { const el = $(id); if (el) el.oninput = () => (state[key] = el.value); };
+  on("fName", "name"); on("fDate", "date"); on("fAge", "age"); on("fMedNote", "medNote"); on("fSymNote", "symNote");
+  on("fPolicy", "policy"); on("fPoints", "points"); on("fPlain", "plain"); on("fGoal", "goal"); on("fFuture", "future");
+  on("fTermNote", "termNote"); on("fComment", "comment");
+  document.querySelectorAll("[data-one]").forEach((b) => (b.onclick = () => {
+    const f = b.dataset.one, v = b.dataset.v;
+    state[f] = state[f] === v && step < STAFF_STEP ? "" : v;
+    render(true);
+  }));
+  document.querySelectorAll("[data-many]").forEach((b) => (b.onclick = () => {
+    const set = state[b.dataset.many], v = b.dataset.v;
+    set.has(v) ? set.delete(v) : set.add(v);
+    // 「特になし」は他の選択と同時に選ばない
+    if (b.dataset.many === "worry") v === "特になし" ? [...set].forEach((t) => t !== v && set.delete(t)) : set.delete("特になし");
+    if (b.dataset.many === "syms") {
+      if (!set.has(state.top)) state.top = "";
+      if (!state.top && set.size) state.top = [...set][0];
+    }
+    render(true);
+  }));
+  document.querySelectorAll("[data-cause]").forEach((b) => (b.onclick = () => {
+    const t = b.dataset.cause;
+    state.causes.has(t) ? state.causes.delete(t) : state.causes.add(t);
+    b.setAttribute("aria-pressed", state.causes.has(t));
+  }));
+  document.querySelectorAll(".q").forEach((b) => (b.onclick = () => {
+    const id = b.dataset.q;
+    state.checks.has(id) ? state.checks.delete(id) : state.checks.add(id);
+    b.setAttribute("aria-pressed", state.checks.has(id));
+    const i = step - Q0;
+    $("countNote").textContent = `当てはまる：${SECTIONS[i].qs.filter((_, j) => state.checks.has(`${i}-${j}`)).length} / ${SECTIONS[i].qs.length}`;
+  }));
+  document.querySelectorAll("[data-pick]").forEach((b) => (b.onclick = () => {
+    state[b.dataset.pick] = b.dataset.key || null;
+    if (state.sub === state.main) state.sub = null;
+    fillPlan(); render(true);
+  }));
+  const c = $("copyBtn");
+  if (c) c.onclick = () => copyText(summaryText(), "copied", () => selectEl($("summary")));
+  const cp = $("copyPatientBtn");
+  if (cp) cp.onclick = () => {
+    // コピーできない環境では文章を表示して、手で選んでもらう
+    const pre = $("patientPre");
+    pre.textContent = patientText();
+    copyText(pre.textContent, "copiedPatient", () => { pre.hidden = false; selectEl(pre); });
+  };
+  const pb = $("printBtn");
+  if (pb) pb.onclick = () => window.print();
+}
+
+$("nextBtn").onclick = () => {
+  if (step === RESULT_STEP) { $("confirm").hidden = false; $("cancelReset").focus(); return; }
+  if (step === CAUSE_STEP) autoPick();
+  step++; render();
+};
+$("backBtn").onclick = () => { if (step > 0) { step--; render(); } };
+$("cancelReset").onclick = () => { $("confirm").hidden = true; };
+$("doReset").onclick = () => { $("confirm").hidden = true; fresh(); render(); };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("confirm").hidden = true; });
+
+render();
+</script>
+</body>
+</html>
