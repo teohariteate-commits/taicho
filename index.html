@@ -218,6 +218,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .believe .last { font-weight: 700; }
 .notice { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 10px 10px 0; font-size: .95rem; margin: 0; }
 .small { font-size: .85rem; color: var(--muted); margin: 0; }
+.clinic { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; letter-spacing: .08em; text-align: right; margin: 0; padding-top: 10px; border-top: 1px solid var(--line); }
 
 .staff summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
 .staff pre, .staff-pre {
@@ -301,7 +302,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 </div>
 
 <script>
-const CHECK_SVG = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CLINIC = "はりお灸サロンテオ";
+const CHECK_SVG ='<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 // 8つの証。A〜D は「足りない（虚）」、E〜H は「詰まっている（実）」。各証6問ずつ、下の SECTIONS に散らしてある
 const TYPES = {
@@ -995,6 +997,7 @@ function resultHTML() {
     ${state.med === "あり" ? `<p class="notice">通院中・服薬中の方へ：ご自宅でのセルフケアを始める前に、主治医にもご相談ください。</p>` : ""}
     ${headache ? `<p class="notice">急に起きた激しい頭痛やめまい、手足のしびれ、ろれつが回らないなどの症状があるときは、すぐに医療機関を受診してください。</p>` : ""}
     <p class="small">この確認表は病気の診断ではなく、東洋医学の考え方でからだの傾向を知るためのものです。からだの変化には個人差があります。体調に不安がある場合や治療中の方は、医師・専門家にご相談ください。</p>
+    <p class="clinic">${CLINIC}</p>
     <div class="panel no-print">
       <span class="eyebrow">患者さんにお渡しする</span>
       <div class="out-row">
@@ -1062,6 +1065,8 @@ function patientText() {
   L.push("からだは、ゆっくり変わっていきます。楽に過ごせる毎日に向かって、一緒に進んでいきましょう。");
   L.push("");
   L.push("※この確認表は病気の診断ではなく、東洋医学の考え方でからだの傾向を知るためのものです。体調に不安がある場合や治療中の方は、医師・専門家にご相談ください。");
+  L.push("");
+  L.push(CLINIC);
   return L.join("\n");
 }
 
