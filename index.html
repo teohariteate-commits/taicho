@@ -6,9 +6,6 @@
 <meta name="robots" content="noindex">
 <title>鍼灸体調確認表</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=BIZ+UDPGothic:wght@400;700&display=swap">
 <style>
 /* Layout: 1画面1テーマのタブレット向け問診。受付 → 健康のこと → お悩み → 体質の質問6画面 → きっかけ → 施術者の確認 → 患者さん向けの結果 */
 :root {
@@ -1187,6 +1184,17 @@ $("backBtn").onclick = () => { if (step > 0) { step--; render(); } };
 $("cancelReset").onclick = () => { $("confirm").hidden = true; };
 $("doReset").onclick = () => { $("confirm").hidden = true; fresh(); render(); };
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("confirm").hidden = true; });
+// うまく動かなかったときは、画面のいちばん上に知らせる（iPad で止まったときに原因を確かめるため）
+window.addEventListener("error", (e) => {
+  let el = $("errNote");
+  if (!el) {
+    el = document.createElement("p");
+    el.id = "errNote"; el.setAttribute("role", "alert");
+    el.style.cssText = "background:#fde8e8;color:#8a1f1f;border:1px solid #e3a5a5;border-radius:10px;padding:10px 14px;margin:0;font-size:.95rem";
+    document.querySelector(".wrap").prepend(el);
+  }
+  el.textContent = `うまく動かない箇所がありました。この画面の写真を撮ってください。（画面${step}：${e.message}）`;
+});
 
 render();
 </script>
